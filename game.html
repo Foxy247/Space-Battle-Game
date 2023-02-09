@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spaceship Battle</title>
+    
     <style>
         canvas {
             background-color: rgba(0,0,0,0.8);
@@ -26,7 +27,9 @@
             height: 50,
             src: 'img/rocket.png'
         };
+
         let ufos = [];
+        let shots = []; 
 
         document.onkeydown = function(e) {
             console.log(e.keyCode);
@@ -65,12 +68,13 @@
             setInterval(update, 1000 / 25);
             setInterval(createUfos, 5000);
             setInterval(checkForCollision, 1000 / 25);
+            setInterval(checkForShoot, 1000/25);
             draw();
         }
 
-        function checkForCollision(){
-            
+        function checkForCollision() {
             ufos.forEach(function(ufo){
+                
                 if (rocket.x + rocket.width > ufo.x &&
                     rocket.y + rocket.height > ufo.y &&
                     rocket.x < ufo.x &&
@@ -80,21 +84,55 @@
                     console.log('Collision!!!');
                     ufos = ufos.filter(u => u != ufo);
                 }
-            });
-        }
 
+                shots.forEach(function(shot){
+                if (shot.x + shot.width > ufo.x &&
+                    shot.y + shot.height > ufo.y &&
+                    shot.x < ufo.x &&
+                    shot.y < ufo.y + ufo.height
+                ) {
+                    ufo.hit = true;
+                    ufo.img.src = 'img/boom.png';
+                    console.log('Collision!!!');
+                    
+                    setTimeout(() => {
+                    ufos = ufos.filter(u => u != ufo);
+                    }, 2000);
+                }
+
+            });
+
+        });
+        }
+        
         function createUfos(){
             let ufo = {
                 x: 800,
-                y: 200, 
+                y: Math.random() * 500, //Ufos werden an zufälligem Ort erstellt 
                 width: 100,
                 height: 40,
                 src: 'img/ufo.png',
-                img: new Image()
+                img: new Image() //?
             };
-            ufo.img.src = ufo.src; 
+            ufo.img.src = ufo.src; //?
             ufos.push(ufo);
         }
+
+        function checkForShoot(){
+            if (KEY_SPACE) {
+                let shot = {
+                x: rocket.x + 110,
+                y: rocket.y + 22, 
+                width: 20,
+                height: 4,
+                src: 'img/shot.png',
+                img: new Image()
+            };
+            shot.img.src = shot.src; 
+            
+            shots.push(shot);
+        }
+    }
 
         function update(){
             if (KEY_UP){
@@ -105,7 +143,13 @@
             }
 
             ufos.forEach(function(ufo){
-                ufo.x -= 5;
+                if (!ufo.hit) {
+                    ufo.x -= 5;
+                }
+            });
+
+            shots.forEach(function(shot) {
+                shot.x += 15;
             });
         }
 
@@ -123,12 +167,17 @@
                 ctx.drawImage(ufo.img, ufo.x, ufo.y, ufo.width, ufo.height);
             });
 
+            shots.forEach(function(shot) {
+                ctx.drawImage(shot.img, shot.x, shot.y, shot.width, shot.height);
+            });
+
+
             requestAnimationFrame(draw);
         }
     </script>
 </head>
 
-<body onload="startGame()">
+ <body onload="startGame()"> <!-- Button machen -->
     <canvas id="canvas" width="720" height="480"></canvas> 
 </body>
 
